@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+echo ""
+echo "=========================================="
+echo " CA Server Config установлен!"
+echo "=========================================="
+echo ""
+echo "Для завершения настройки выполните:"
+echo "  sudo /opt/ca-server/scripts/setup-security.sh"
+echo "  sudo /opt/ca-server/scripts/setup-ca.sh"
+echo ""

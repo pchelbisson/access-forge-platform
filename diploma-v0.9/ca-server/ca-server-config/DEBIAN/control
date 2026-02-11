@@ -1,0 +1,10 @@
+Package: ca-server-config
+Version: 1.0.0
+Section: admin
+Priority: optional
+Architecture: all
+Depends: easy-rsa, ufw, fail2ban
+Maintainer: pchelbisson iamroypchel@gmail.com
+Description: CA Server configuration package
+ Installs security settings and Easy-RSA configuration
+ for Certificate Authority server.

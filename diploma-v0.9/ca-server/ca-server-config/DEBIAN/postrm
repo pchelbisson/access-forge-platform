@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+if [ "$1" = "purge" ]; then
+    echo "[INFO] Полное удаление конфигурации..."
+    # НЕ удаляем /opt/easy-rsa - там ценные сертификаты!
+    echo "[WARN] PKI директория /opt/easy-rsa сохранена"
+fi
