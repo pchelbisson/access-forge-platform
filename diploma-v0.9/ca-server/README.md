@@ -14,6 +14,7 @@ Built with Easy-RSA on Ubuntu 22.04.
 ```bash
 # Install package
 sudo dpkg -i ca-server-config.deb
+sudo dpkg -i node-exporter_1.7.0_amd64.deb
 sudo apt-get install -f -y
 
 # Run setup scripts

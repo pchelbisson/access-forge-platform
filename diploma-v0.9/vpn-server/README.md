@@ -17,6 +17,8 @@ OpenVPN server with integration with a certificate authority (CA).
 
 ```bash
 sudo dpkg -i vpn-server_1.0.0_all.deb
+sudo dpkg -i node-exporter_1.7.0_amd64.deb
+sudo dpkg -i openvpn-exporter_0.3.0_amd64.deb
 sudo apt-get install -f -y
 # Run setup scripts
 sudo /opt/vpn-server/scripts/setup-vpn.sh
@@ -25,6 +27,15 @@ sudo /opt/vpn-server/scripts/setup-security.sh
 # Allow metrics from monitoring server only
 sudo ufw allow from 10.10.0.11 to any port 9100 proto tcp comment "Node Exporter from Prometheus"
 sudo ufw allow from 10.10.0.11 to any port 9176 proto tcp comment "OpenVPN Exporter from Prometheus"
+```
+
+### Option 2: Manual scripts
+```bash
+sudo ./setup-vpn.sh
+sudo ./setup-security.sh
+# Then install exporters manually
+sudo dpkg -i node-exporter_1.7.0_amd64.deb
+sudo dpkg -i openvpn-exporter_0.3.0_amd64.deb
 ```
 
 ## Setting environment variables
