@@ -1,0 +1,2 @@
+# Бэкап CA каждый день в 3:00
+0 3 * * * root /usr/local/bin/backup-ca.sh >> /var/log/backup-ca.log 2>&1

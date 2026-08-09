@@ -1,0 +1,2 @@
+# Node Exporter options
+OPTIONS="--collector.systemd --collector.processes"

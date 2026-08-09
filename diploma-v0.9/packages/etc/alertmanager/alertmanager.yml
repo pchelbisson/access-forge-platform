@@ -1,0 +1,31 @@
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'iamroypchel@gmail.com'
+  smtp_auth_username: 'iamroypchel@gmail.com'
+  smtp_auth_password: 'epjrbgrwnlkdffsw'
+
+route:
+  group_by: ['alertname', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'email-notifications'
+
+  routes:
+    - match:
+        severity: critical
+      receiver: 'email-notifications'
+      repeat_interval: 1h
+
+receivers:
+  - name: 'email-notifications'
+    email_configs:
+      - to: 'iamroypchel@gmail.com'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+        severity: 'critical'
+    target_match:
+        severity: 'warning'
+    equal: ['alertname', 'instance']

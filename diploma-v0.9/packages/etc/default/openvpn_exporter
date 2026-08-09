@@ -1,0 +1,2 @@
+# OpenVPN status file path
+OPTIONS="-openvpn.status_paths /var/log/openvpn/openvpn-status.log -web.listen-address 0.0.0.0:9176"
