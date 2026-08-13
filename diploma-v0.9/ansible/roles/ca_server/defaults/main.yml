@@ -1,0 +1,10 @@
+easyrsa_dir: /opt/easy-rsa
+ca_name: "MyCompany-CA"
+easyrsa_req_country: "RU"
+easyrsa_req_city: "Zyuzino"
+easyrsa_req_province: "Moscow"
+easyrsa_req_org: "MyCompany"
+easyrsa_req_ou: "MyAwesomeOrgUnit"
+easyrsa_req_email: "admin@mycompany.local"
+easyrsa_key_size: 2048
+easyrsa_ca_expire: 3650

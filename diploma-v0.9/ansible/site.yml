@@ -1,0 +1,8 @@
+---
+- name: Test easy-rsa installation
+  hosts: ca_server
+  gather_facts: no
+  become: yes
+  roles:
+    - ca_server
+

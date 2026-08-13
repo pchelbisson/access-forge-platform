@@ -1,4 +1,11 @@
-# Diploma Project: Secure Infrastructure
+# Secure Infrastructure
+
+> [!IMPORTANT]
+> **Current Status: Infrastructure Migration (Stage 0 → Stage 1)**
+> The repository is actively transitioning from a `.deb`-based deployment scheme to **Ansible**.
+>
+> * **Legacy configuration (.deb):** Frozen. The last stable version is available under the tag [v0.9-diploma](https://github.com/pchelbisson/access-forge-platform/releases/tag/v0.9) (Frozen Baseline).
+> * **New configuration (Ansible):** Currently being implemented in the `main` branch.
 
 ## Project Description
 

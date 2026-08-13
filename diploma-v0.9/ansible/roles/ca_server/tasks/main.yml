@@ -1,0 +1,41 @@
+- name: Install easy-rsa
+  apt:
+    name: easy-rsa
+    state: present
+
+- name: Create CA directory using make-cadir
+  command: make-cadir "{{ easyrsa_dir }}"
+  args:
+    creates: "{{ easyrsa_dir }}"
+
+- name: Deploy vars file
+  template:
+    src: vars.j2
+    dest: "{{ easyrsa_dir }}/vars"
+    mode: '0600'
+
+- name: Initialize PKI
+  command: ./easyrsa init-pki
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_dir }}/pki"
+
+- name: Build CA certificate
+  command: ./easyrsa --batch --req-cn="{{ ca_name }}" build-ca nopass
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_dir }}/pki/ca.crt"
+
+- name: Find all files inside the private directory
+  find:
+    paths: "{{ easyrsa_dir }}/pki/private"
+    file_type: file
+    recurse: yes
+  register: private_files
+
+- name: Set permissions on all secret files inside private directory
+  file:
+    path: "{{ item.path }}"
+    state: file
+    mode: '0600'
+  loop: "{{ private_files.files }}"
