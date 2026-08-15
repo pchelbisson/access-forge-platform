@@ -1,0 +1,7 @@
+[sshd]
+enabled = true
+port = 22
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = {{ fail2ban_maxretry }}
+bantime = {{ fail2ban_bantime }}
