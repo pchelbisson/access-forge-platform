@@ -8,6 +8,3 @@ easyrsa_req_ou: "MyAwesomeOrgUnit"
 easyrsa_req_email: "admin@mycompany.local"
 easyrsa_key_size: 2048
 easyrsa_ca_expire: 3650
-
-fail2ban_maxretry: 3
-fail2ban_bantime: 3600
