@@ -1,0 +1,11 @@
+set_var EASYRSA_BATCH          "yes"
+set_var EASYRSA_REQ_CN         "{{ vpn_server_name }}"
+set_var EASYRSA_REQ_COUNTRY    "RU"
+set_var EASYRSA_REQ_PROVINCE   "Moscow"
+set_var EASYRSA_REQ_CITY       "Moscow"
+set_var EASYRSA_REQ_ORG        "DevOps Diploma"
+set_var EASYRSA_REQ_EMAIL      "admin@local"
+set_var EASYRSA_REQ_OU         "VPN"
+set_var EASYRSA_KEY_SIZE       2048
+set_var EASYRSA_ALGO           rsa
+set_var EASYRSA_CERT_EXPIRE    825

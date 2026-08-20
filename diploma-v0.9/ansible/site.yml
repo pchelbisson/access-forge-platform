@@ -6,3 +6,9 @@
   roles:
     - ca_server
 
+- name: Test VPN server installation
+  hosts: ca_server
+  gather_facts: false
+  become: true
+  roles:
+    - vpn_server

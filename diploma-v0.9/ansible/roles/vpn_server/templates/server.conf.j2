@@ -1,0 +1,19 @@
+port {{ vpn_port }}
+proto {{ vpn_proto }}
+dev tun
+ca /etc/openvpn/server/ca.crt
+cert /etc/openvpn/server/{{ vpn_server_name }}.crt
+key /etc/openvpn/server/{{ vpn_server_name }}.key
+dh /etc/openvpn/server/dh.pem
+tls-auth /etc/openvpn/server/ta.key 0
+server {{ vpn_network }} {{ vpn_netmask }}
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 8.8.8.8"
+keepalive 10 120
+cipher AES-256-GCM
+auth SHA256
+user nobody
+group nogroup
+persist-key
+persist-tun
+verb 3

@@ -1,0 +1,78 @@
+- name: Install OpenVPN and easy-rsa
+  apt:
+    name:
+      - openvpn
+      - easy-rsa
+    state: present
+
+- name: Copy easy-rsa template to local working directory
+  copy:
+    src: /usr/share/easy-rsa/
+    dest: "{{ vpn_easyrsa_dir }}/"
+    remote_src: yes
+    mode: preserve
+
+- name: Deploy vpn easy-rsa vars file
+  template:
+    src: vpn_vars.j2
+    dest: "{{ vpn_easyrsa_dir }}/vars"
+    mode: '0600'
+
+- name: Initialize local PKI for CSR generation
+  command: ./easyrsa init-pki
+  args:
+    chdir: "{{ vpn_easyrsa_dir }}"
+    creates: "{{ vpn_easyrsa_dir }}/pki"
+
+- name: Create issued certificates directory
+  file:
+    path: "{{ vpn_easyrsa_dir }}/pki/issued"
+    state: directory
+
+- name: Generate server key and CSR
+  command: ./easyrsa --batch gen-req "{{ vpn_server_name }}" nopass
+  args:
+    chdir: "{{ vpn_easyrsa_dir }}"
+    creates: "{{ vpn_easyrsa_dir }}/pki/private/{{ vpn_server_name }}.key"
+
+- name: Copy server key to OpenVPN directory
+  copy:
+    src: "{{ vpn_easyrsa_dir }}/pki/private/{{ vpn_server_name }}.key"
+    dest: "/etc/openvpn/server/{{ vpn_server_name }}.key"
+    remote_src: yes
+    mode: '0600'
+
+- name: Generate DH parameters
+  command: openssl dhparam -out /etc/openvpn/server/dh.pem 2048
+  become: true
+  args:
+    creates: /etc/openvpn/server/dh.pem
+
+- name: Generate TLS auth key
+  command: openvpn --genkey secret /etc/openvpn/server/ta.key
+  args:
+    creates: /etc/openvpn/server/ta.key
+
+- name: Checking for the existence of the VPN server certificate file.
+  ansible.builtin.stat:
+    path: "/etc/openvpn/server/{{ vpn_server_name }}.crt"
+    get_checksum: no
+  register: vpn_crt_stat
+
+- name: Deploy server.conf
+  template:
+    src: server.conf.j2
+    dest: /etc/openvpn/server/server.conf
+    mode: '0644'
+  notify: restart openvpn
+  when: vpn_crt_stat.stat.exists
+
+- name: Enable IP forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_file: /etc/sysctl.d/99-openvpn.conf
+    reload: yes
+
+- import_role:
+    name: security_hardening
