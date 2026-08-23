@@ -59,6 +59,26 @@
     get_checksum: no
   register: vpn_crt_stat
 
+- name: Generate client key and CSR
+  command: ./easyrsa --batch gen-req "{{ client_name }}" nopass
+  args:
+    chdir: "{{ vpn_easyrsa_dir }}"
+    creates: "{{ vpn_easyrsa_dir }}/pki/private/{{ client_name }}.key"
+  when: client_name is defined
+
+- name: Check if signed client certificate exists
+  stat:
+    path: "{{ vpn_easyrsa_dir }}/pki/issued/{{ client_name }}.crt"
+  register: client_crt_stat
+  when: client_name is defined
+
+- name: Build client .ovpn config
+  template:
+    src: client.ovpn.j2
+    dest: "{{ vpn_output_dir }}/{{ client_name }}.ovpn"
+    mode: '0600'
+  when: client_name is defined and client_crt_stat.stat.exists
+
 - name: Deploy server.conf
   template:
     src: server.conf.j2

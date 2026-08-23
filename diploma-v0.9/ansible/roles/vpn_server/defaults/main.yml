@@ -4,3 +4,4 @@ vpn_network: 10.8.0.0
 vpn_netmask: 255.255.255.0
 vpn_port: 1194
 vpn_proto: udp
+vpn_output_dir: "/home/{{ ansible_user }}/clients"
