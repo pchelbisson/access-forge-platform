@@ -12,3 +12,10 @@
   become: true
   roles:
     - vpn_server
+
+- name: Test Prometheus installation
+  hosts: monitoring_server
+  gather_facts: false
+  become: true
+  roles:
+    - prometheus

@@ -1,0 +1,59 @@
+# {{ ansible_managed }}
+groups:
+  - name: infrastructure
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {% raw %}{{ $labels.instance }}{% endraw %} down"
+          description: "{% raw %}{{ $labels.instance }}{% endraw %} has been down for more than 1 minute."
+
+      - alert: HighCpuUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {% raw %}{{ $labels.instance }}{% endraw %}"
+          description: "CPU usage is above 80% for more than 5 minutes."
+
+      - alert: HighMemoryUsage
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {% raw %}{{ $labels.instance }}{% endraw %}"
+          description: "Memory usage is above 90% for more than 5 minutes."
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {% raw %}{{ $labels.instance }}{% endraw %}"
+          description: "Disk space is below 15% on {% raw %}{{ $labels.mountpoint }}{% endraw %}."
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes) * 100 < 5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space on {% raw %}{{ $labels.instance }}{% endraw %}"
+          description: "Disk space is below 5% on {% raw %}{{ $labels.mountpoint }}{% endraw %}."
+
+  - name: openvpn
+    rules:
+      - alert: OpenVPNDown
+        expr: openvpn_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "OpenVPN server is down"
+          description: "OpenVPN exporter reports server is down."

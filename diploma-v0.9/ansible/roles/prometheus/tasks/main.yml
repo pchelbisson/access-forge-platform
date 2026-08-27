@@ -1,0 +1,20 @@
+- name: Install Prometheus and Alertmanager
+  apt:
+    name:
+      - prometheus
+      - prometheus-alertmanager
+    state: present
+
+- name: Deploy prometheus.yml
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    mode: '0644'
+  notify: restart prometheus
+
+- name: Deploy alerts.yml
+  template:
+    src: alerts.yml.j2
+    dest: /etc/prometheus/alerts.yml
+    mode: '0644'
+  notify: restart prometheus
