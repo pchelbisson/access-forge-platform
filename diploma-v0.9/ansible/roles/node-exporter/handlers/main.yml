@@ -1,0 +1,4 @@
+- name: Restart apt node_exporter
+  systemd:
+    name: prometheus-node-exporter
+    state: restarted

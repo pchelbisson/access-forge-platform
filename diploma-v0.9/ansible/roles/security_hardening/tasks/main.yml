@@ -24,6 +24,13 @@
     port: '22'
     proto: tcp
 
+- name: Allow ONLY Prometheus Server to scrape metrics
+  community.general.ufw:
+    rule: allow
+    from_ip: "{{ hostvars[groups['monitoring_server'][0]]['ansible_host'] }}"
+    port: '9100'
+    proto: tcp
+
 - name: Set UFW default incoming policy to deny
   community.general.ufw:
     default: deny

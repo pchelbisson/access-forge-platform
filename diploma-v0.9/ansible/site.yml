@@ -19,3 +19,10 @@
   become: true
   roles:
     - prometheus
+  
+- name: Test Node Exporter installation
+  hosts: all_infra
+  gather_facts: false
+  become: true
+  roles:
+    - node-exporter
