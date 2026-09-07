@@ -1,4 +1,8 @@
 scrape_configs:
+  - job_name: 'openvpn_exporter_metrics'
+    static_configs:
+      - targets:
+          - '{{ hostvars['vm_target']['ansible_host'] }}:9176'
   - job_name: 'node_exporter_metrics'
     static_configs:
       - targets:

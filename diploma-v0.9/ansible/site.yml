@@ -12,6 +12,7 @@
   become: true
   roles:
     - vpn_server
+    - openvpn_exporter
 
 - name: Test Prometheus installation
   hosts: monitoring_server

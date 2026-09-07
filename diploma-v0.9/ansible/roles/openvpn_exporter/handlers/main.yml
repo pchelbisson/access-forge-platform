@@ -1,0 +1,5 @@
+---
+- name: Restart openvpn_exporter
+  ansible.builtin.systemd:
+    name: openvpn_exporter
+    state: restarted

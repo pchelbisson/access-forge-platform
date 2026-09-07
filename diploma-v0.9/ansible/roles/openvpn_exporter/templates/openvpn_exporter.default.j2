@@ -1,0 +1,3 @@
+# {{ ansible_managed }}
+# OpenVPN status file path and listen port configuration
+OPTIONS="-openvpn.status_paths {{ openvpn_exporter_status_path }} -web.listen-address {{ openvpn_exporter_listen_address }}"

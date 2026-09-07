@@ -1,0 +1,14 @@
+[Unit]
+Description=OpenVPN Exporter for Prometheus
+After=network-online.target openvpn@server.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/default/openvpn_exporter
+ExecStart=/usr/local/bin/openvpn_exporter $OPTIONS
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

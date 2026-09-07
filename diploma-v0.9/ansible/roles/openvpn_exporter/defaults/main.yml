@@ -1,0 +1,6 @@
+---
+openvpn_exporter_version: "0.3.0"
+openvpn_exporter_download_url: "https://github.com/kumina/openvpn_exporter/archive/refs/tags/v{{ openvpn_exporter_version }}.tar.gz"
+
+openvpn_exporter_listen_address: "0.0.0.0:9176"
+openvpn_exporter_status_path: "/run/openvpn-server/status-server.log"
