@@ -5,8 +5,24 @@
     update_cache: true
     cache_valid_time: 3600
 
+- name: Ensure Prometheus textfile collector directory exists
+  ansible.builtin.file:
+    path: /var/lib/node_exporter/textfile
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Enable textfile collector for node_exporter
+  ansible.builtin.template:
+    src: prometheus-node-exporter.default.j2
+    dest: /etc/default/prometheus-node-exporter
+    mode: '0644'
+  notify: restart node_exporter
+
 - name: Ensure Node Exporter is started and enabled
   systemd:
     name: prometheus-node-exporter
     state: started
     enabled: true
+

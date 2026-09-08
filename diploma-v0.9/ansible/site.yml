@@ -27,3 +27,10 @@
   become: true
   roles:
     - node-exporter
+
+- name: Test Backup installation
+  hosts: monitoring_server
+  gather_facts: false
+  become: true
+  roles:
+    - backup

@@ -1,0 +1,25 @@
+---
+- name: Ensure local backup directory exists on monitoring server
+  ansible.builtin.file:
+    path: "{{ backup_dir }}"
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+
+- name: Deploy CA backup script from template
+  ansible.builtin.template:
+    src: backup-ca.sh.j2
+    dest: /usr/local/bin/backup-ca.sh
+    mode: '0700'
+    owner: root
+    group: root
+
+- name: Configure cron job for CA backup
+  ansible.builtin.cron:
+    name: "backup-ca"
+    cron_file: "backup-ca"
+    user: "root"
+    hour: "{{ backup_cron_hour }}"
+    minute: "{{ backup_cron_minute }}"
+    job: "/usr/local/bin/backup-ca.sh >> /var/log/backup-ca.log 2>&1"
