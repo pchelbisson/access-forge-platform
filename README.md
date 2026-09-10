@@ -1,124 +1,69 @@
-# Secure Infrastructure
+# Infrastructure Automation Stack (PKI + VPN + Monitoring + Backup)
 
-> [!IMPORTANT]
-> **Current Status: Infrastructure Migration (Stage 0 → Stage 1)**
-> The repository is actively transitioning from a `.deb`-based deployment scheme to **Ansible**.
->
-> * **Legacy configuration (.deb):** Frozen. The last stable version is available under the tag [v0.9-diploma](https://github.com/pchelbisson/access-forge-platform/releases/tag/v0.9) (Frozen Baseline).
-> * **New configuration (Ansible):** Currently being implemented in the `main` branch.
+This repository contains a declarative description of an infrastructure stack migrated from disjointed legacy Bash scripts into structured Ansible roles. The project automates the deployment of a secured VPN server, a dedicated Certificate Authority (CA), a continuous metrics collection pipeline, and an isolated backup perimeter.
 
-## Project Description
-
-The project is a secure infrastructure in Yandex.Cloud, including:
-- Certificate Authority (PKI) based on Easy-RSA
-- VPN server based on OpenVPN
-- Monitoring system (Prometheus + Alertmanager)
-- Backup system (Gitea mirror, reprepro, GPG-encrypted backups)
+![Architecture](docs/access_forge_platform_architecture.svg)
 
 ## Architecture
 
-![Infrastructure scheme](docs/infrastructure.drawio.png)
+The infrastructure is split into two target nodes to enforce proper network isolation:
+1. **CA & VPN Server (`ca_server`):** The host responsible for signing certificates (Easy-RSA) and terminating client VPN tunnels (OpenVPN).
+2. **Monitoring & Backup Server (`monitoring_server`):** An isolated host running Prometheus and Alertmanager to scrape telemetry from all nodes, as well as a cron job that pulls backups from the CA server.
 
-## Cloud Environment
+---
 
-| Parameter | Value |
-|-----------|-------|
-| Cloud Provider | Yandex.Cloud |
-| Cloud ID | b1g68dl41tuhcto5fj68 |
-| Folder ID | b1gg38p7c15uhudv4fmv |
-| Region | ru-central1 |
-| Zones | ru-central1-a, ru-central1-b |
+## Quick Start
 
-### Access
+To deploy the entire infrastructure stack, execute the following steps:
 
-| Role | Account | Access Level |
-|------|---------|--------------|
-| Owner | iamroypchel@gmail.com | Full |
-
-## Service URLs
-
-| Service | URL | Access |
-|---------|-----|--------|
-| VPN Server | 51.250.15.247:1194/udp | External |
-| Prometheus | http://10.10.0.11:9090 | Via VPN |
-| Alertmanager | http://10.10.0.11:9093 | Via VPN |
-| Gitea | http://10.128.1.17:3000 | Via VPN |
-| APT Repo | http://10.128.1.17:8080 | Via VPN |
-
-### Components:
-
-| VM | Internal IP | External IP | Zone | Purpose |
-|----|-------------|-------------|------|---------|
-| ca-vm | 10.10.0.6 | — | ru-central1-a | Certificate Authority (Easy-RSA) |
-| vpn-vm | 10.10.0.27 | 51.250.15.247 | ru-central1-a | OpenVPN server |
-| monitoring-vm | 10.10.0.11 | — | ru-central1-a | Prometheus, Alertmanager |
-| backup-vm | 10.128.1.17 | — | ru-central1-b | Gitea, reprepro, CA backups |
-
-## Data Streams
-
-![Flow diagram](docs/data-flows.drawio.png)
-
-## Quick start
-
-### Requirements:
-- Yandex.Cloud account
-- SSH key
-- Ubuntu 22.04 VMs
-
-### Deployment:
-
+1. **Prepare the inventory file:**
 ```bash
-# 1. Clone repository
-git clone https://github.com/pchelbisson/access-forge-platform
-
-# 2. Deploy CA server (ca-vm)
-sudo dpkg -i packages/ca-server-config.deb
-sudo /opt/ca-server/scripts/setup-security.sh
-sudo /opt/ca-server/scripts/setup-ca.sh
-
-# 3. Deploy VPN server (vpn-vm)
-sudo dpkg -i packages/vpn-server_1.0.0_all.deb
-sudo /opt/vpn-server/scripts/setup-vpn.sh
-sudo /opt/vpn-server/scripts/setup-security.sh
-# Sign certificate via CA (see docs/VPN.md)
-
-# 4. Deploy Monitoring (monitoring-vm)
-sudo dpkg -i packages/prometheus-server.deb
-sudo dpkg -i packages/alertmanager.deb
-
-# 5. Install node_exporter on all VMs
-sudo dpkg -i packages/node-exporter_1.7.0_amd64.deb
+   cp ansible/inventory.example.ini ansible/inventory.ini
+```
+2. **Configure access credentials:**
+   Edit `ansible/inventory.ini` by specifying the actual IP addresses of your VMs, usernames, and paths to your SSH private keys.
+3. **Run the playbook:**
+```bash
+   ansible-playbook -i ansible/inventory.ini ansible/site.yml
 ```
 
-## Repository structure
+---
 
-├── README.md
-├── docs/
-│   ├── infrastructure.drawio.png
-│   ├── data-flows.drawio.png
-│   ├── CA.md
-│   ├── VPN.md
-│   ├── MONITORING.md
-│   └── BACKUP.md
-└── packages/
-    ├── ca-server-config.deb
-    ├── vpn-server_1.0.0_all.deb
-    ├── prometheus-server.deb
-    ├── alertmanager.deb
-    ├── node-exporter_1.7.0_amd64.deb
-    └── openvpn-exporter_0.3.0_amd64.deb
+## Manual Prerequisites
 
-## Documentation
+As a deliberate design choice, two manual configuration steps have been left unautomated to preserve security guarantees:
 
-- **Certification Authority** - PKI setup, certificate signing procedures
-- **VPN Server** - OpenVPN configuration, client certificate issuance
-- **Monitoring** - Prometheus metrics, alert rules
-- **Backup** - Backup strategy, disaster recovery procedures
+1. **Certificate Signing:** The process of issuing and exchanging certificates between the CA and the OpenVPN server is not fully automated. The administrator must manually verify certificate signing requests (CSR) within the Easy-RSA environment to prevent unauthorized key issuance.
+2. **SSH Access for Backups:** The backup script executes as `root` on the monitoring server. Before the first run, you must manually append the monitoring server's root public SSH key to the `authorized_keys` file of the deployment user on the CA server to allow passwordless archive downloads.
 
-## Security Features
+---
 
-✅ Air-gapped CA (no external IP)
-✅ UFW firewall on all VMs
-✅ GPG-encrypted CA backups
-✅ Prometheus Basic Auth
-✅ Node exporters accessible only from monitoring-vm
+## Architectural Decisions (ADR)
+
+### 1. Choosing Ansible over Custom .deb Packages
+* **Decision:** Server configuration and utility deployment have been completely migrated to Ansible roles.
+* **Rationale:** Building custom `.deb` packages is impractical for frequently changing application configurations (such as `server.conf` or `prometheus.yml`). Ansible provides a declarative approach, built-in idempotency, and native template management (Jinja2) out of the box, significantly simplifying long-term infrastructure maintenance.
+
+### 2. Retaining Manual Verification for Certificate Signing
+* **Decision:** Key generation and signing inside Easy-RSA remain decoupled from automated deployment scripts.
+* **Rationale:** This functions as a critical security control. Fully automating the generation and signing of private keys without human intervention introduces substantial risks; a compromise of the automation controller would grant an attacker full control over the entire PKI perimeter.
+
+### 3. Isolating `security_hardening` into a Reusable Role
+* **Decision:** Firewall configurations (UFW) and base security policies are decoupled into an independent role that executes first across all hosts.
+* **Rationale:** This approach centralizes network access control management. The role utilizes dynamic inventory variables (`hostvars`) to precisely open exporter ports (`9100`, `9176`) exclusively to the monitoring server's IP address, completely preventing public metric exposure.
+
+### 4. Pulling Backups to an Isolated Host
+* **Decision:** The `backup-ca.sh` script runs on the monitoring server and pulls `/opt/easy-rsa` archives over SSH rather than storing them locally on the CA.
+* **Rationale:** Alignment with disaster recovery best practices. Storing backups locally on the CA server is futile in the event of disk failure or host compromise. An isolated monitoring server guarantees data persistence and integrity.
+
+### 5. Deferring Alertmanager Email Notifications
+* **Decision:** Alertmanager is installed and running, and all alert rules fire correctly and are visible in the Prometheus/Alertmanager web UI, but no SMTP receiver is configured — alerts are not actually delivered via email.
+* **Rationale:** Configuring a real SMTP delivery path (Gmail App Password, Ansible Vault for the credential) was scoped but deprioritized to close out the project within a tight schedule. The alerting *logic* is fully implemented and verified; only the *delivery channel* is missing.
+
+---
+
+## Known Gaps
+
+* **Alertmanager Email Delivery:** See ADR #5 above — deliberately deferred, not a technical blocker.
+* **Missing Alerts:** `SystemdServiceFailed`, `OpenVPNServiceDown`, and `OpenVPNNoClients` were documented in the original v0.9 brief but never implemented — neither in the legacy bash version nor in this Ansible migration. They require exporters/metrics that were only added later (node_exporter, openvpn_exporter) and are left as a known gap for future work.
+* **Local Environment Constraint:** The entire stack was developed and verified locally on two VirtualBox VMs (bridged networking) rather than cloud infrastructure. Deploying to a cloud provider (e.g., Yandex Cloud) was deliberately deferred due to a tight project schedule, not a technical limitation.
